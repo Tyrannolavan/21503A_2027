@@ -21,73 +21,70 @@ int auton_test = 0; // Engage to test auton and run it after 5 seconds, disengag
 
 void touchUI()
 {
+	pros::screen::set_eraser(LAVANS_HEART_RN);
 	pros::screen::erase(); // Reset the screen
 
-	// Draw the UI :3
-	pros::screen::set_pen(LAVANS_HEART_RN);
-	pros::screen::fill_rect(0, 0, 480, 240);
-	pros::screen::set_pen(BURNT_ROSE);
+	// Color Management for UI Buttons
+	if (auton_selector == 0)
+	{
+		pros::screen::set_pen(BLOOD);
+	} else {
+		pros::screen::set_pen(BURNT_ROSE);}
 	pros::screen::fill_rect(251, 49, 339, 91); // Left Auton Button
+	if (auton_selector == 1)
+	{
+		pros::screen::set_pen(BLOOD);
+	} else {
+		pros::screen::set_pen(BURNT_ROSE);}
 	pros::screen::fill_rect(364, 49, 452, 91); // Right Auton Button
+	if (auton_test == 0)
+	{
+		pros::screen::set_pen(BLOOD);
+	} else {
+		pros::screen::set_pen(BURNT_ROSE);}
 	pros::screen::fill_rect(21, 136, 109, 178); // Select Button
+	if (auton_test == 1)
+	{
+		pros::screen::set_pen(BLOOD);
+	} else {
+		pros::screen::set_pen(BURNT_ROSE);}
 	pros::screen::fill_rect(118, 136, 206, 178); // Test Button
+	
+
+	// Draw the UI :3
 	pros::screen::set_pen(WARM_YELLOW);
 	pros::screen::print(TEXT_LARGE, 30, 30, "The Dawn of 21503A");
 	pros::screen::print(TEXT_MEDIUM, 268, 64, "Left Auton");
 	pros::screen::print(TEXT_MEDIUM, 378, 64, "Right Auton");
+	pros::screen::print(TEXT_MEDIUM, 32, 151, "Select Auton");
+	pros::screen::print(TEXT_MEDIUM, 135, 151, "Test Auton");
 
-
-	// Auton Selector / Tester
 	while (true)
 	{
-		pros::screen_touch_status_s_t touch= pros::screen::touch_status();
-		if(touch.touch_status == pros::E_TOUCH_PRESSED) {
-			if(touch.x > 251 && touch.x < 339 && touch.y > 49 && touch.y < 91) {
-				auton_selector = 0; // Left Auton
-				pros::delay(300);
-			}
-			// Put the Highlight Here to show if it was selected
 
-			else if(touch.x > 364 && touch.x < 452 && touch.y > 49 && touch.y < 91) {
-				auton_selector = 1; // Right Auton
-				pros::delay(300);
-			}
-
-			else if (touch.x > 21 && touch.x < 109 && touch.y > 136 && touch.y < 178) {
-				auton_test = 0; // Toggle Auton Selection
-				pros::delay(300);
-			}
-
-			else if (touch.x > 118 && touch.x < 206 && touch.y > 136 && touch.y < 178) {
-				auton_test = 1; // Toggle Auton Testing
-				pros::delay(300);
-				
-			}
-			// Put the Highlight Here to show if it was selected as well
-			
+		if (pros::competition::is_disabled() == false) {
+			break; // Exit the loop if the robot is enabled
 		}
+
+		pros::screen_touch_status_s_t touch = pros::screen::touch_status(); // Get the touch status
+
+		if (touch.touch_status == pros::E_TOUCH_PRESSED) { // Check if the screen is being touched
+
+			if(touch.x > 251 && touch.x < 339 && touch.y > 49 && touch.y < 91) {
+				auton_selector = 0;
+				break;
+			} else if (touch.x > 364 && touch.x < 452 && touch.y > 49 && touch.y < 91) {
+				auton_selector = 1;
+				break;
+			} else if (touch.x > 21 && touch.x < 109 && touch.y > 136 && touch.y < 178) {
+				auton_test = 0; // Toggle the auton test variable
+				break;
+			} else if (touch.x > 118 && touch.x < 206 && touch.y > 136 && touch.y < 178) {
+				auton_test = 1; // Toggle the auton test variable
+				break;
+			}
+		} pros::delay(20); // Delay to prevent excessive CPU usage
 	}
-
-	// // Auton Tester
-	// while (true)
-	// {
-	// 	pros::screen_touch_status_s_t touch= pros::screen::touch_status();
-	// 	if(touch.touch_status == pros::E_TOUCH_PRESSED) {
-	// 		if(touch.x > 21 && touch.x < 109 && touch.y > 136 && touch.y < 178) {
-	// 			auton_test = 0; // Toggle Auton Selection
-	// 			pros::delay(300);
-	// 		}
-	// 		// Put the Highlight Here to show if it was toggled
-
-	// 		else if(touch.x > 118 && touch.x < 206 && touch.y > 136 && touch.y < 178) {
-	// 			auton_test = 1; // Toggle Auton Testing
-	// 			// Maybe a button to reset the selection or something, up to u
-	// 			pros::delay(300);
-	// 		}
-	// 		// Put the Highlight Here to show if it was toggled as well
-			
-	// 	}
-	// }
 }
 
 
@@ -95,22 +92,36 @@ void touchUI()
 
 void initialize() 
 {
-	touchUI();
-	while (pros::competition::is_disabled()) {
-			if (auton_test ==1)
-			{	
+	while (pros::competition::is_disabled() == true)
+	{
+		touchUI();
+
+		// Run when Test is Selected
+		if (auton_test == 1)
+		{	
+			pros::screen::set_eraser(LAVANS_HEART_RN);
+			pros::screen::erase(); // Clear the screen for the test
+			pros::screen::set_pen(WARM_YELLOW);
 			// Do the test waiting thing
 			for (int i = 5; i > 0; i--) {
+				if (i < 5){
+				pros::screen::erase(); // Clear the screen for the next message
+				}
+
 				pros::screen::print(TEXT_LARGE, 30, 30, "Auton Starting in %d seconds", i);
 				pros::delay(1000);
 			}
+
+			pros::screen::erase(); // Clear the screen for the auton
+			pros::screen::print(TEXT_LARGE, 30, 30, "Running Auton");
+			
+			autonomous(); // Run the selected auton
+
+			auton_test = 0; // Reset the auton test variable
+
+			pros::delay(20);
 		}
-		autonomous(); // Run the selected auton
-
-		auton_test = 0; // Reset the auton test variable
-
-		pros::delay(20);
-	}
+	}	
 }
 
 
@@ -143,12 +154,6 @@ void autonomous()
 		case 0:
 			// Left Auton Code Here
 
-			pros::screen::set_pen(BLOOD);
-			pros::screen::fill_rect(251, 49, 339, 91); // Left Auton Button Highlighted
-			pros::screen::set_pen(WARM_YELLOW);
-			pros::screen::print(TEXT_LARGE, 30, 30, "Left Auton Selected");
-			pros::screen::print(TEXT_MEDIUM, 268, 64, "Left Auton");
-
 			// Remove this if u want
 			pros::delay(300);
 			pros::screen::print(TEXT_LARGE, 30, 30, "there's no auton bro");
@@ -157,11 +162,6 @@ void autonomous()
 
 		case 1:
 			// Right Auton Code Here
-			pros::screen::set_pen(BLOOD);
-			pros::screen::fill_rect(364, 49, 452, 91); // Right Auton Button
-			pros::screen::set_pen(WARM_YELLOW);
-			pros::screen::print(TEXT_LARGE, 30, 30, "Right Auton Selected");
-			pros::screen::print(TEXT_MEDIUM, 378, 64, "Right Auton");
 
 			// Remove this if u want
 			pros::delay(300);
@@ -171,6 +171,7 @@ void autonomous()
 
 		case 2:
 			// Skills or something I guess
+
 			pros::screen::print(TEXT_LARGE, 30, 30, "SKILLS AUTON SELECTED");
 			pros::delay(300);
 			pros::screen::print(TEXT_LARGE, 30, 30, "there's no auton bro, u have a skill issue");
