@@ -19,37 +19,20 @@
 int auton_selector = 0; // The Auton Selector variable, 0 for left, 1 for right, and so on for custom like skills
 int auton_test = 0; // Engage to test auton and run it after 5 seconds, disengage to just select it
 
-void touchUI()
+
+void drawUI()
 {
 	pros::screen::set_eraser(LAVANS_HEART_RN);
 	pros::screen::erase(); // Reset the screen
 
-	// Color Management for UI Buttons
-	if (auton_selector == 0)
-	{
-		pros::screen::set_pen(BLOOD);
-	} else {
-		pros::screen::set_pen(BURNT_ROSE);}
+	pros::screen::set_pen(auton_selector == 0 ? BLOOD : BURNT_ROSE); // Set pen color based on selection
 	pros::screen::fill_rect(251, 49, 339, 91); // Left Auton Button
-	if (auton_selector == 1)
-	{
-		pros::screen::set_pen(BLOOD);
-	} else {
-		pros::screen::set_pen(BURNT_ROSE);}
+	pros::screen::set_pen(auton_selector == 1 ? BLOOD : BURNT_ROSE); // Set pen color based on selection
 	pros::screen::fill_rect(364, 49, 452, 91); // Right Auton Button
-	if (auton_test == 0)
-	{
-		pros::screen::set_pen(BLOOD);
-	} else {
-		pros::screen::set_pen(BURNT_ROSE);}
+	pros::screen::set_pen(auton_test == 0 ? BLOOD : BURNT_ROSE); // Set pen color based on selection
 	pros::screen::fill_rect(21, 136, 109, 178); // Select Button
-	if (auton_test == 1)
-	{
-		pros::screen::set_pen(BLOOD);
-	} else {
-		pros::screen::set_pen(BURNT_ROSE);}
+	pros::screen::set_pen(auton_test == 1 ? BLOOD : BURNT_ROSE); // Set pen color based on selection
 	pros::screen::fill_rect(118, 136, 206, 178); // Test Button
-	
 
 	// Draw the UI :3
 	pros::screen::set_pen(WARM_YELLOW);
@@ -57,10 +40,20 @@ void touchUI()
 	pros::screen::print(TEXT_MEDIUM, 268, 64, "Left Auton");
 	pros::screen::print(TEXT_MEDIUM, 378, 64, "Right Auton");
 	pros::screen::print(TEXT_MEDIUM, 32, 151, "Select Auton");
+	
+
 	pros::screen::print(TEXT_MEDIUM, 135, 151, "Test Auton");
+}
+
+
+
+void touchUI()
+{
+	drawUI(); // Draw the initial UI	
 
 	while (true)
 	{
+		bool state_changed = false; // Variable to track if the state has changed
 
 		if (pros::competition::is_disabled() == false) {
 			break; // Exit the loop if the robot is enabled
@@ -69,29 +62,43 @@ void touchUI()
 		pros::screen_touch_status_s_t touch = pros::screen::touch_status(); // Get the touch status
 
 		if (touch.touch_status == pros::E_TOUCH_PRESSED) { // Check if the screen is being touched
+			
 
 			if(touch.x > 251 && touch.x < 339 && touch.y > 49 && touch.y < 91) {
 				auton_selector = 0;
-				break;
+				state_changed = true; // State has changed, update the UI
 			} else if (touch.x > 364 && touch.x < 452 && touch.y > 49 && touch.y < 91) {
 				auton_selector = 1;
-				break;
+				state_changed = true; // State has changed, update the UI
 			} else if (touch.x > 21 && touch.x < 109 && touch.y > 136 && touch.y < 178) {
 				auton_test = 0; // Toggle the auton test variable
-				break;
+				state_changed = true; // State has changed, update the UI
 			} else if (touch.x > 118 && touch.x < 206 && touch.y > 136 && touch.y < 178) {
 				auton_test = 1; // Toggle the auton test variable
-				break;
+				state_changed = true; // State has changed, update the UI
 			}
-		} pros::delay(20); // Delay to prevent excessive CPU usage
+			
+			}
+			if (state_changed) {
+				drawUI(); // Update the UI if the state has changed
+				state_changed = false; // Reset the state changed variable
+
+				if (auton_test == 1) {
+					break;
+			}
+			pros::delay(20); // Delay to prevent excessive CPU usage
+		}
+		pros::delay(20); // Delay to prevent excessive CPU usage
 	}
 }
 
 
 
 
+
 void initialize() 
 {
+	
 	while (pros::competition::is_disabled() == true)
 	{
 		touchUI();
@@ -140,7 +147,7 @@ void competition_initialize()
 
 
 // What do u think this is?
-void autonomous() 
+void autonomous()  
 {
 	// Use the Auton Selector Variable :)
 	switch (auton_selector) {
