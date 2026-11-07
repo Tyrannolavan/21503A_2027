@@ -10,7 +10,19 @@
 #include "liblvgl/lvgl.h"
 #include "lemlib/api.hpp"  // re-enable only once LemLib is installed in the project
 
-// Works on both LVGL 8 and LVGL 9, so the project builds whichever liblvgl is installed
+// Define Objects
+pros::Controller master(pros::E_CONTROLLER_MASTER);
+// Temporary Motor Numbers for now :3
+pros::MotorGroup left_mg({1, -2, 3});
+pros::MotorGroup right_mg({-4, 5, -6});
+pros::Imu imu(10); // IMU on Port 10
+
+// Mapping out the Odom Pods
+pros::Rotation chassis(11);
+pros::Rotation turning(12);
+pros::Rotation claw(13);
+
+// LVGL Defs and stuff
 #if LVGL_VERSION_MAJOR >= 9
   #define LV_BTN_CREATE(p) lv_button_create(p)
   #define LV_SCR_ACTIVE()  lv_screen_active()
@@ -25,11 +37,11 @@
 #define COLOR_YELLOW lv_color_hex(0xF9FAC3)
 #define COLOR_BLOOD  lv_color_hex(0xB50015)
 
-// Global State
+// Auton Selector Definitions
 int auton_selector = 0; // 0: Left, 1: Right, 2: Skills
 int auton_test = 0;     // 0: Select mode, 1: Test mode
 
-// UI Object Pointers
+// UI Objects
 static lv_obj_t* btn_left = nullptr;
 static lv_obj_t* btn_right = nullptr;
 static lv_obj_t* btn_skills = nullptr;
@@ -43,11 +55,13 @@ static int countdown = 0;
 static volatile bool auton_running = false;
 static volatile bool auton_done = false;
 
+// Just setting colors
 static void set_button_color(lv_obj_t* btn, lv_color_t color) {
   lv_obj_set_style_bg_color(btn, color, LV_PART_MAIN);
   lv_obj_set_style_bg_opa(btn, LV_OPA_COVER, LV_PART_MAIN);
 }
 
+// Setting Styles
 static void update_button_styles() {
   if (!btn_left || !btn_right || !btn_skills || !btn_select || !btn_test) return;
   set_button_color(btn_left,   auton_selector == 0 ? COLOR_BLOOD : COLOR_ROSE);
@@ -85,7 +99,7 @@ static void test_timer_cb(lv_timer_t* t) {
     auton_test = 0;
     update_button_styles();
     lv_label_set_text(status_label, "Test Complete. System Ready.");
-    lv_timer_t`(t);
+    lv_timer_t(t);
     test_timer = nullptr;
   }
 }
@@ -133,6 +147,7 @@ static lv_obj_t* make_button(lv_obj_t* parent, const char* text, int32_t x, int3
   return btn;
 }
 
+// Creates the GUI
 void create_gui() {
   lv_obj_t* scr = LV_SCR_ACTIVE();
   lv_obj_set_style_bg_color(scr, COLOR_LAVAN, LV_PART_MAIN);
@@ -157,14 +172,20 @@ void create_gui() {
   update_button_styles();
 }
 
+// Initialize
 void initialize() {
   create_gui();
 }
 
+
 void disabled() {}
 
+// Used for any specific initializ
 void competition_initialize() {}
 
+// Where the Autonomous is Written
+// Write Auton then copy to specific side with correct variables
+// Use path.jerryio
 void autonomous() {
   switch (auton_selector) {
     case 0:
@@ -185,9 +206,6 @@ void autonomous() {
 }
 
 void opcontrol() {
-  pros::Controller master(pros::E_CONTROLLER_MASTER);
-  pros::MotorGroup left_mg({1, -2, 3});
-  pros::MotorGroup right_mg({-4, 5, -6});
 
   while (true) {
     int dir = master.get_analog(ANALOG_LEFT_Y);
