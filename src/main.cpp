@@ -13,8 +13,8 @@
 // Define Objects
 pros::Controller master(pros::E_CONTROLLER_MASTER);
 // Temporary Motor Numbers for now :3
-pros::MotorGroup left_mg({1, -2, 3});
-pros::MotorGroup right_mg({-4, 5, -6});
+pros::MotorGroup left_mg({1, 2, 3});
+pros::MotorGroup right_mg({-4, -5, -6});
 pros::Imu imu(10); // IMU on Port 10
 
 // Mapping out the Odom Pods
